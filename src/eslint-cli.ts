@@ -1,23 +1,21 @@
 import * as core from '@actions/core';
 import * as path from 'path';
 
-import { CHECK_NAME } from './constants';
+import { CHECK_NAME, EXTENSIONS_TO_LINT } from './constants';
 
 const { GITHUB_WORKSPACE = '' } = process.env;
 
-export async function eslint() {
+export async function eslint(filesList: string[]) {
   const { CLIEngine } = (await import(
     path.join(process.cwd(), 'node_modules/eslint')
   )) as typeof import('eslint');
 
-  const cli = new CLIEngine({ extensions: ['.js', '.mjs'] });
+  const cli = new CLIEngine({ extensions: [...EXTENSIONS_TO_LINT] });
 
   // getting files glob
   // process.argv will be ['node', 'thisFiles.js', ...]
 
-  const report = cli.executeOnFiles([
-    core.getInput('glob', { required: true })
-  ]);
+  const report = cli.executeOnFiles(filesList);
   // fixableErrorCount, fixableWarningCount are available too
   const { results, errorCount, warningCount } = report;
 

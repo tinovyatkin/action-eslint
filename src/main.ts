@@ -1,7 +1,10 @@
+import * as path from 'path';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { CHECK_NAME } from './constants';
+import { CHECK_NAME, EXTENSIONS_TO_LINT } from './constants';
 import { eslint } from './eslint-cli';
+
+const GOOD_FILE_STATUS = new Set(['added', 'modified']);
 
 async function run() {
   const octokit = new github.GitHub(
@@ -18,7 +21,24 @@ async function run() {
     started_at: new Date().toISOString()
   });
   try {
-    const { conclusion, output } = await eslint();
+    // getting files modified in pull request
+    const files = await octokit.pulls.listFiles({
+      ...context.issue,
+      per_page: 100 // it's maximum
+    });
+
+    /**
+     * @see {@link https://developer.github.com/v3/pulls/#list-pull-requests-files}
+     */
+    const { conclusion, output } = await eslint(
+      files.data
+        .filter(
+          ({ filename, status }) =>
+            EXTENSIONS_TO_LINT.has(path.extname(filename)) &&
+            GOOD_FILE_STATUS.has(status)
+        )
+        .map(({ filename }) => filename)
+    );
     await octokit.checks.update({
       ...context.repo,
       check_run_id: check.data.id,
