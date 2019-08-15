@@ -1,11 +1,15 @@
 import * as core from '@actions/core';
-import { CLIEngine } from 'eslint';
+import * as path from 'path';
 
 import { CHECK_NAME } from './constants';
 
 const { GITHUB_WORKSPACE = '' } = process.env;
 
-export function eslint() {
+export async function eslint() {
+  const { CLIEngine } = (await import(
+    path.join(process.cwd(), 'node_modules/eslint')
+  )) as typeof import('eslint');
+
   const cli = new CLIEngine({ extensions: ['.js', '.mjs'] });
 
   // getting files glob

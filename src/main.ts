@@ -18,7 +18,7 @@ async function run() {
     started_at: new Date().toISOString()
   });
   try {
-    const { conclusion, output } = eslint();
+    const { conclusion, output } = await eslint();
     await octokit.checks.update({
       ...context.repo,
       check_run_id: check.data.id,
