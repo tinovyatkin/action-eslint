@@ -25,7 +25,14 @@ async function run() {
         GOOD_FILE_STATUS.has(status)
     )
     .map(({ filename }) => filename);
-  if (filesToLint.length < 1) return;
+  if (filesToLint.length < 1) {
+    console.info(
+      `No files with [${[...EXTENSIONS_TO_LINT].join(
+        ', '
+      )}] extensions added or modified in this PR, nothing to lint...`
+    );
+    return;
+  }
 
   // create check
   const check = await octokit.checks.create({
@@ -36,6 +43,12 @@ async function run() {
     started_at: new Date().toISOString()
   });
   try {
+    const checks = await octokit.checks.listForRef({
+      ...context.repo,
+      ref: context.ref,
+      status: 'in_progress'
+    });
+    console.log('Running checks', checks.data.check_runs);
     /**
      * @see {@link https://developer.github.com/v3/pulls/#list-pull-requests-files}
      */
