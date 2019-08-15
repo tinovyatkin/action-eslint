@@ -1,8 +1,8 @@
 {
-  "name": "node12-template-action",
-  "version": "0.0.0",
+  "name": "eslint-gihub-lint-action",
+  "version": "1.0.0",
   "private": true,
-  "description": "Node 12 template action",
+  "description": "GitHub Action to run ESLint",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
@@ -15,21 +15,18 @@
   "keywords": [
     "actions",
     "node",
-    "setup"
+    "eslint",
+    "github"
   ],
-  "author": "GitHub",
+  "author": "Konstantin Vyatkin <tino@vtkn.io>",
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.0.0",
-    "@actions/exec": "^1.0.0",
-    "@actions/github": "1.0.0",
-    "@actions/io": "^1.0.0",
-    "@actions/tool-cache": "^1.0.0",
-    "@types/eslint": "4.16.8",
-    "eslint": "6.1.0",
-    "semver": "^6.1.1"
+    "@actions/github": "1.0.0"
   },
   "devDependencies": {
+    "@types/eslint": "4.16.8",
+    "eslint": "6.1.0",
     "@octokit/rest": "16.28.7",
     "@types/jest": "^24.0.13",
     "@types/node": "^12.0.4",
