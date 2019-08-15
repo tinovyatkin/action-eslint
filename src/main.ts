@@ -12,6 +12,21 @@ async function run() {
   );
   const context = github.context;
 
+  // getting files modified in pull request
+  const files = await octokit.pulls.listFiles({
+    ...context.repo,
+    pull_number: context.issue.number,
+    per_page: 100 // it's maximum
+  });
+  const filesToLint = files.data
+    .filter(
+      ({ filename, status }) =>
+        EXTENSIONS_TO_LINT.has(path.extname(filename)) &&
+        GOOD_FILE_STATUS.has(status)
+    )
+    .map(({ filename }) => filename);
+  if (filesToLint.length < 1) return;
+
   // create check
   const check = await octokit.checks.create({
     ...context.repo,
@@ -21,24 +36,10 @@ async function run() {
     started_at: new Date().toISOString()
   });
   try {
-    // getting files modified in pull request
-    const files = await octokit.pulls.listFiles({
-      ...context.issue,
-      per_page: 100 // it's maximum
-    });
-
     /**
      * @see {@link https://developer.github.com/v3/pulls/#list-pull-requests-files}
      */
-    const { conclusion, output } = await eslint(
-      files.data
-        .filter(
-          ({ filename, status }) =>
-            EXTENSIONS_TO_LINT.has(path.extname(filename)) &&
-            GOOD_FILE_STATUS.has(status)
-        )
-        .map(({ filename }) => filename)
-    );
+    const { conclusion, output } = await eslint(filesToLint);
     await octokit.checks.update({
       ...context.repo,
       check_run_id: check.data.id,
