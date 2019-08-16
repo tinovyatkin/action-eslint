@@ -2,9 +2,9 @@ name: "ESlint Runner Action"
 description: "Run ESLint in parallel of CI build"
 author: "Konstantin Vyatkin <tino@vtkn.io>"
 inputs:
-  glob:
-    description: "Glob of files to lint"
-    default: "."
+  repo-token:
+    description: "Token for the repo. Can be passed in using {{ secrets.GITHUB_TOKEN }}"
+    required: true
 runs:
   using: "node12"
   main: "lib/main.js"
