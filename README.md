@@ -4,8 +4,6 @@ Using this GitHub Action, scan files changed in current Pull Request with inline
 
 <img src="./images/annotations.png">
 
-<img src="./images/check.png">
-
 ## Usage
 
 The workflow, usually declared in `.github/workflows/lint.yml`, looks like:
@@ -35,6 +33,8 @@ jobs:
           repo-token: ${{secrets.GITHUB_TOKEN}}
           check-name: eslint
 ```
+
+<img src="./images/check.png">
 
 ## License
 
