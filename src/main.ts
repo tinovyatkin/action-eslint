@@ -26,7 +26,9 @@ async function run() {
     ...context.repo,
     pull_number: context.issue.number
   });
-  console.log('Commit:', commits.data.pop());
+  const commit = commits.data.pop();
+  if (!commit) return;
+
   const filesToLint = files.data
     .filter(
       ({ filename, status }) =>
@@ -47,7 +49,7 @@ async function run() {
   const check = await octokit.checks.create({
     ...context.repo,
     name: CHECK_NAME,
-    head_sha: context.ref,
+    head_sha: commit.sha,
     status: 'in_progress',
     started_at: new Date().toISOString()
   });
