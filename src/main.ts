@@ -50,7 +50,10 @@ async function run() {
       prNumber: context.issue.number
     }
   );
-  console.log('Commit from GraphQL:', lastCommit);
+  console.log(
+    'Commit from GraphQL:',
+    lastCommit.repository.pullRequest.commits.nodes[0].commit.oid
+  );
 
   const filesToLint = files.data
     .filter(
@@ -68,15 +71,12 @@ async function run() {
     return;
   }
 
-  console.log('Environment:', process.env);
-
   console.log('Context SHA: %s, last PR commit', context.sha, commit.sha);
   const checks = await octokit.checks.listForRef({
     ...context.repo,
     status: 'in_progress',
     ref: commit.sha
   });
-  console.log('All checks:', inspect(checks.data, false, 4, true));
 
   const { id: checkId } =
     checks.data.check_runs.find(
@@ -99,11 +99,7 @@ async function run() {
       conclusion,
       output
     });
-    const ann = await octokit.checks.listAnnotations({
-      ...context.repo,
-      check_run_id: checkId
-    });
-    console.log('Check annotations:', ann);
+
     if (conclusion === 'failure') {
       core.setFailed(`ESLint found some errors`);
     }

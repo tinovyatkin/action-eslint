@@ -48,10 +48,6 @@ export async function eslint(filesList: string[]) {
     }
   }
 
-  if (annotations.length) {
-    console.info('ESLint annotations:', annotations);
-  } else console.info('No ESlint problems found');
-
   return {
     conclusion: (errorCount > 0
       ? 'failure'
