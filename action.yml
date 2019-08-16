@@ -8,6 +8,9 @@ inputs:
   check-name:
     description: "This check name to post annotations"
     required: false
+branding:
+  icon: "code"
+  color: "purple"
 runs:
   using: "node12"
   main: "lib/main.js"
