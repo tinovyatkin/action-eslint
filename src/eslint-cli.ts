@@ -1,4 +1,3 @@
-import * as core from '@actions/core';
 import * as path from 'path';
 
 import { CHECK_NAME, EXTENSIONS_TO_LINT } from './constants';
@@ -31,7 +30,6 @@ export async function eslint(filesList: string[]) {
         ruleId,
         message,
         endLine,
-        source,
         column,
         endColumn
       } = msg;

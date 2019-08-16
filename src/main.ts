@@ -1,11 +1,8 @@
 import * as path from 'path';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { inspect } from 'util';
 import { CHECK_NAME, EXTENSIONS_TO_LINT } from './constants';
 import { eslint } from './eslint-cli';
-
-const GOOD_FILE_STATUS = new Set(['added', 'modified']);
 
 /**
  * This is just for syntax highlighting, does nothing
