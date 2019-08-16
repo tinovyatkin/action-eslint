@@ -12,7 +12,11 @@ async function run() {
   );
   const context = github.context;
 
-  // getting files modified in pull request
+  /**
+   * getting files modified in pull request
+   *
+   * @see {@link https://developer.github.com/v3/pulls/#list-pull-requests-files}
+   */
   const files = await octokit.pulls.listFiles({
     ...context.repo,
     pull_number: context.issue.number,
@@ -34,6 +38,7 @@ async function run() {
     return;
   }
 
+  console.log('Context SHA: %s', context.sha);
   const check = await octokit.checks.create({
     ...context.repo,
     name: CHECK_NAME,
@@ -42,18 +47,19 @@ async function run() {
     started_at: new Date().toISOString()
   });
   try {
-    /**
-     * @see {@link https://developer.github.com/v3/pulls/#list-pull-requests-files}
-     */
     const { conclusion, output } = await eslint(filesToLint);
     await octokit.checks.update({
       ...context.repo,
       check_run_id: check.data.id,
-      status: 'completed',
       completed_at: new Date().toISOString(),
       conclusion,
       output
     });
+    const ann = await octokit.checks.listAnnotations({
+      ...context.repo,
+      check_run_id: check.data.id
+    });
+    console.log('Check annotations:', ann);
     if (conclusion === 'failure') {
       core.setFailed(`ESLint found some errors`);
     }
@@ -61,7 +67,6 @@ async function run() {
     await octokit.checks.update({
       ...context.repo,
       check_run_id: check.data.id,
-      status: 'completed',
       conclusion: 'failure',
       completed_at: new Date().toISOString()
     });

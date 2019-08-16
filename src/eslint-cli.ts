@@ -25,13 +25,25 @@ export async function eslint(filesList: string[]) {
     const filename = filesList.find(file => filePath.endsWith(file));
     if (!filename) continue;
     for (const msg of messages) {
-      const { line, severity, ruleId, message, endLine, source } = msg;
+      const {
+        line,
+        severity,
+        ruleId,
+        message,
+        endLine,
+        source,
+        column,
+        endColumn
+      } = msg;
       annotations.push({
         path: filename,
         start_line: line,
         end_line: endLine || line,
+        start_column: column,
+        end_column: endColumn || column,
         annotation_level: ESLINT_TO_GITHUB_LEVELS[severity],
-        message: `[${ruleId}] ${message}`
+        title: ruleId || 'ESLint',
+        message
       });
     }
   }
