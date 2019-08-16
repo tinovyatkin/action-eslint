@@ -45,7 +45,19 @@ async function run() {
     return;
   }
 
-  console.log('Context SHA: %s', context.sha);
+  console.log('Context SHA: %s, last PR commit', context.sha, commit.sha);
+  const checks = await octokit.checks.listForRef({
+    ...context.repo,
+    status: 'in_progress',
+    ref: commit.sha
+  });
+  console.log('All checks:', checks.data);
+  const suites = await octokit.checks.listSuitesForRef({
+    ...context.repo,
+    ref: commit.sha
+  });
+  console.log('All suites:', suites.data);
+
   const check = await octokit.checks.create({
     ...context.repo,
     name: CHECK_NAME,
