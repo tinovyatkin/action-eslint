@@ -1,9 +1,39 @@
-# JavaScript Action Template
+# Lint change Pull Request files with ESLint from GitHub Action
 
-This template offers an easy way to get started writing a javascript action with TypeScript compile time support, unit testing with Jest and using the GitHub Actions Toolkit.
+Using this GitHub Action, scan files changed in current Pull Request with inline code annotations:
 
-## Getting Started
+<img src="./images/annotations.png">
 
-See the walkthrough located [here](https://github.com/actions/toolkit/blob/master/docs/javascript-action.md).
+## Usage
 
-In addition to walking your through how to create an action, it also provides strategies for versioning, releasing and referencing your actions.
+The workflow, usually declared in `.github/workflows/lint.yml`, looks like:
+
+```yml
+name: Lint
+
+on: pull_request
+
+jobs:
+  eslint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: rm .yarnclean
+      - run: yarn --frozen-lockfile --ignore-engines --ignore-optional --no-bin-links --non-interactive --silent --ignore-scripts --production=false
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          HUSKY_SKIP_INSTALL: true
+      - uses: tinovyatkin/action-eslint@v1
+        with:
+          repo-token: ${{secrets.GITHUB_TOKEN}}
+          check-name: eslint
+```
+
+## License
+
+All scripts and documentation in this project are released under the LGPLv3 License.
