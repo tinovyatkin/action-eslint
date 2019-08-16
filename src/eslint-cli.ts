@@ -3,7 +3,11 @@ import * as path from 'path';
 
 import { CHECK_NAME, EXTENSIONS_TO_LINT } from './constants';
 
-const { GITHUB_WORKSPACE = '' } = process.env;
+const ESLINT_TO_GITHUB_LEVELS: import('@octokit/rest').ChecksUpdateParamsOutputAnnotations['annotation_level'][] = [
+  'notice',
+  'warning',
+  'failure'
+];
 
 export async function eslint(filesList: string[]) {
   const { CLIEngine } = (await import(
@@ -11,36 +15,30 @@ export async function eslint(filesList: string[]) {
   )) as typeof import('eslint');
 
   const cli = new CLIEngine({ extensions: [...EXTENSIONS_TO_LINT] });
-
-  // getting files glob
-  // process.argv will be ['node', 'thisFiles.js', ...]
-
   const report = cli.executeOnFiles(filesList);
   // fixableErrorCount, fixableWarningCount are available too
   const { results, errorCount, warningCount } = report;
 
-  const levels: import('@octokit/rest').ChecksUpdateParamsOutputAnnotations['annotation_level'][] = [
-    'notice',
-    'warning',
-    'failure'
-  ];
-
   const annotations: import('@octokit/rest').ChecksUpdateParamsOutputAnnotations[] = [];
   for (const result of results) {
     const { filePath, messages } = result;
-    const path = filePath.substring(GITHUB_WORKSPACE.length + 1);
+    const filename = filesList.find(file => filePath.endsWith(file));
+    if (!filename) continue;
     for (const msg of messages) {
-      const { line, severity, ruleId, message } = msg;
-      const annotationLevel = levels[severity];
+      const { line, severity, ruleId, message, endLine, source } = msg;
       annotations.push({
-        path,
+        path: filename,
         start_line: line,
-        end_line: line,
-        annotation_level: annotationLevel,
+        end_line: endLine || line,
+        annotation_level: ESLINT_TO_GITHUB_LEVELS[severity],
         message: `[${ruleId}] ${message}`
       });
     }
   }
+
+  if (annotations.length) {
+    console.info('ESLint annotations:', annotations);
+  } else console.info('No ESlint problems found');
 
   return {
     conclusion: (errorCount > 0

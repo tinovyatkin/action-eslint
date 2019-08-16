@@ -8,7 +8,7 @@ const GOOD_FILE_STATUS = new Set(['added', 'modified']);
 
 async function run() {
   const octokit = new github.GitHub(
-    process.env.GITHUB_TOKEN || core.getInput('token', { required: true })
+    core.getInput('repo-token', { required: true })
   );
   const context = github.context;
 
@@ -33,13 +33,6 @@ async function run() {
     );
     return;
   }
-
-  // create check
-  const checks = await octokit.checks.listSuitesForRef({
-    ...context.repo,
-    ref: context.ref
-  });
-  console.log('Running checks', checks.data.check_suites);
 
   const check = await octokit.checks.create({
     ...context.repo,
