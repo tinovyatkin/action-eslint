@@ -50,7 +50,7 @@ async function run() {
   console.log('Commit from GraphQL:', currentSha);
   const files = prInfo.repository.pullRequest.files.nodes;
 
-  const filesToLint = files.data
+  const filesToLint = files
     .filter(f => EXTENSIONS_TO_LINT.has(path.extname(f.path)))
     .map(f => f.path);
   if (filesToLint.length < 1) {
