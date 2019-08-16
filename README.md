@@ -1,4 +1,4 @@
-# Lint change Pull Request files with ESLint from GitHub Action
+# Lint changed Pull Request files with ESLint from GitHub Action
 
 Using this GitHub Action, scan files changed in current Pull Request with inline code annotations:
 
