@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import { inspect } from 'util';
 import { CHECK_NAME, EXTENSIONS_TO_LINT } from './constants';
 import { eslint } from './eslint-cli';
 
@@ -28,6 +29,28 @@ async function run() {
   });
   const commit = commits.data.pop();
   if (!commit) return;
+  const lastCommit = await octokit.graphql(
+    `query($owner:String!, $name:String!, $prNumber: Int!) {
+      repository(owner: $owner, name: $name){
+        pullRequest(number: $prNumber){
+            commits(last: 1){
+              nodes{
+                commit{
+                  oid
+                }
+              }
+            }
+          
+        }
+      }
+    }`,
+    {
+      owner: context.repo.owner,
+      name: context.repo.repo,
+      prNumber: context.issue.number
+    }
+  );
+  console.log('Commit from GraphQL: %s', lastCommit.data);
 
   const filesToLint = files.data
     .filter(
@@ -51,12 +74,7 @@ async function run() {
     status: 'in_progress',
     ref: commit.sha
   });
-  console.log('All checks:', checks.data);
-  const suites = await octokit.checks.listSuitesForRef({
-    ...context.repo,
-    ref: commit.sha
-  });
-  console.log('All suites:', suites.data);
+  console.log('All checks:', inspect(checks.data, false, 4, true));
 
   const check = await octokit.checks.create({
     ...context.repo,
