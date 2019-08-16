@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { inspect } from 'util';
-import { CHECK_NAME, EXTENSIONS_TO_LINT } from './constants';
+import { CHECK_NAME, EXTENSIONS_TO_LINT, OUR_EXTERNAL_ID } from './constants';
 import { eslint } from './eslint-cli';
 
 const GOOD_FILE_STATUS = new Set(['added', 'modified']);
@@ -50,7 +50,7 @@ async function run() {
       prNumber: context.issue.number
     }
   );
-  console.log('Commit from GraphQL: %s', lastCommit.data);
+  console.log('Commit from GraphQL:', lastCommit);
 
   const filesToLint = files.data
     .filter(
@@ -68,6 +68,8 @@ async function run() {
     return;
   }
 
+  console.log('Environment:', process.env);
+
   console.log('Context SHA: %s, last PR commit', context.sha, commit.sha);
   const checks = await octokit.checks.listForRef({
     ...context.repo,
@@ -76,25 +78,30 @@ async function run() {
   });
   console.log('All checks:', inspect(checks.data, false, 4, true));
 
-  const check = await octokit.checks.create({
-    ...context.repo,
-    name: CHECK_NAME,
-    head_sha: commit.sha,
-    status: 'in_progress',
-    started_at: new Date().toISOString()
-  });
+  const { id: checkId } =
+    checks.data.check_runs.find(
+      ({ external_id }) => external_id === OUR_EXTERNAL_ID
+    ) ||
+    (await octokit.checks.create({
+      ...context.repo,
+      name: CHECK_NAME,
+      head_sha: commit.sha,
+      status: 'in_progress',
+      started_at: new Date().toISOString()
+    })).data;
+
   try {
     const { conclusion, output } = await eslint(filesToLint);
     await octokit.checks.update({
       ...context.repo,
-      check_run_id: check.data.id,
+      check_run_id: checkId,
       completed_at: new Date().toISOString(),
       conclusion,
       output
     });
     const ann = await octokit.checks.listAnnotations({
       ...context.repo,
-      check_run_id: check.data.id
+      check_run_id: checkId
     });
     console.log('Check annotations:', ann);
     if (conclusion === 'failure') {
@@ -103,7 +110,7 @@ async function run() {
   } catch (error) {
     await octokit.checks.update({
       ...context.repo,
-      check_run_id: check.data.id,
+      check_run_id: checkId,
       conclusion: 'failure',
       completed_at: new Date().toISOString()
     });
