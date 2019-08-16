@@ -2,10 +2,16 @@ import * as path from 'path';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { inspect } from 'util';
-import { CHECK_NAME, EXTENSIONS_TO_LINT, OUR_EXTERNAL_ID } from './constants';
+import { CHECK_NAME, EXTENSIONS_TO_LINT } from './constants';
 import { eslint } from './eslint-cli';
 
 const GOOD_FILE_STATUS = new Set(['added', 'modified']);
+
+/**
+ * This is just for syntax highlighting, does nothing
+ * @param {string} s
+ */
+const gql = (s: TemplateStringsArray): string => s.join('');
 
 async function run() {
   const octokit = new github.GitHub(
@@ -13,55 +19,40 @@ async function run() {
   );
   const context = github.context;
 
-  /**
-   * getting files modified in pull request
-   *
-   * @see {@link https://developer.github.com/v3/pulls/#list-pull-requests-files}
-   */
-  const files = await octokit.pulls.listFiles({
-    ...context.repo,
-    pull_number: context.issue.number,
-    per_page: 100 // it's maximum
-  });
-  const commits = await octokit.pulls.listCommits({
-    ...context.repo,
-    pull_number: context.issue.number
-  });
-  const commit = commits.data.pop();
-  if (!commit) return;
-  const lastCommit = await octokit.graphql(
-    `query($owner:String!, $name:String!, $prNumber: Int!) {
-      repository(owner: $owner, name: $name){
-        pullRequest(number: $prNumber){
-            commits(last: 1){
-              nodes{
-                commit{
+  const prInfo = await octokit.graphql(
+    gql`
+      query($owner: String!, $name: String!, $prNumber: Int!) {
+        repository(owner: $owner, name: $name) {
+          pullRequest(number: $prNumber) {
+            files(first: 100) {
+              nodes {
+                path
+              }
+            }
+            commits(last: 1) {
+              nodes {
+                commit {
                   oid
                 }
               }
             }
-          
+          }
         }
       }
-    }`,
+    `,
     {
       owner: context.repo.owner,
       name: context.repo.repo,
       prNumber: context.issue.number
     }
   );
-  console.log(
-    'Commit from GraphQL:',
-    lastCommit.repository.pullRequest.commits.nodes[0].commit.oid
-  );
+  const currentSha = prInfo.repository.pullRequest.commits.nodes[0].commit.oid;
+  console.log('Commit from GraphQL:', currentSha);
+  const files = prInfo.repository.pullRequest.files.nodes;
 
   const filesToLint = files.data
-    .filter(
-      ({ filename, status }) =>
-        EXTENSIONS_TO_LINT.has(path.extname(filename)) &&
-        GOOD_FILE_STATUS.has(status)
-    )
-    .map(({ filename }) => filename);
+    .filter(f => EXTENSIONS_TO_LINT.has(path.extname(f.path)))
+    .map(f => f.path);
   if (filesToLint.length < 1) {
     console.warn(
       `No files with [${[...EXTENSIONS_TO_LINT].join(
@@ -71,24 +62,28 @@ async function run() {
     return;
   }
 
-  console.log('Context SHA: %s, last PR commit', context.sha, commit.sha);
-  const checks = await octokit.checks.listForRef({
-    ...context.repo,
-    status: 'in_progress',
-    ref: commit.sha
-  });
-
-  const { id: checkId } =
-    checks.data.check_runs.find(
-      ({ external_id }) => external_id === OUR_EXTERNAL_ID
-    ) ||
-    (await octokit.checks.create({
+  let checkId;
+  const givenCheckName = core.getInput('check-name');
+  if (givenCheckName) {
+    const checks = await octokit.checks.listForRef({
+      ...context.repo,
+      status: 'in_progress',
+      ref: currentSha
+    });
+    const theCheck = checks.data.check_runs.find(
+      ({ name }) => name === givenCheckName
+    );
+    if (theCheck) checkId = theCheck.id;
+  }
+  if (!checkId) {
+    checkId = (await octokit.checks.create({
       ...context.repo,
       name: CHECK_NAME,
-      head_sha: commit.sha,
+      head_sha: currentSha,
       status: 'in_progress',
       started_at: new Date().toISOString()
-    })).data;
+    })).data.id;
+  }
 
   try {
     const { conclusion, output } = await eslint(filesToLint);
