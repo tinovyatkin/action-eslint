@@ -26,11 +26,11 @@
   },
   "devDependencies": {
     "@octokit/rest": "16.28.7",
-    "@types/eslint": "6.1.0",
+    "@types/eslint": "6.1.1",
     "@types/jest": "24.0.18",
     "@types/node": "12.7.2",
     "@types/semver": "6.0.1",
-    "eslint": "6.2.1",
+    "eslint": "6.2.2",
     "jest": "24.9.0",
     "jest-circus": "24.9.0",
     "ts-jest": "24.0.2",
