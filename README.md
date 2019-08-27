@@ -31,7 +31,7 @@ jobs:
       - uses: tinovyatkin/action-eslint@v1
         with:
           repo-token: ${{secrets.GITHUB_TOKEN}}
-          check-name: eslint
+          check-name: eslint # this is the check name from above 👆 where to post annotations
 ```
 
 <img src="./images/check.png">
