@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import { CHECK_NAME, EXTENSIONS_TO_LINT } from './constants';
+import { EXTENSIONS_TO_LINT } from './constants';
 
 const ESLINT_TO_GITHUB_LEVELS: import('@octokit/rest').ChecksUpdateParamsOutputAnnotations['annotation_level'][] = [
   'notice',
@@ -35,10 +35,10 @@ export async function eslint(filesList: string[]) {
       } = msg;
       annotations.push({
         path: filename,
-        start_line: line,
-        end_line: endLine || line,
-        start_column: column,
-        end_column: endColumn || column,
+        start_line: line || 0,
+        end_line: endLine || line || 0,
+        start_column: column || 0,
+        end_column: endColumn || column || 0,
         annotation_level: ESLINT_TO_GITHUB_LEVELS[severity],
         title: ruleId || 'ESLint',
         message
@@ -51,8 +51,8 @@ export async function eslint(filesList: string[]) {
       ? 'failure'
       : 'success') as import('@octokit/rest').ChecksCreateParams['conclusion'],
     output: {
-      title: CHECK_NAME,
-      summary: `${errorCount} error(s), ${warningCount} warning(s) found`,
+      title: `${errorCount} error(s), ${warningCount} warning(s) found in ${filesList.length} file(s)`,
+      summary: `${errorCount} error(s), ${warningCount} warning(s) found in ${filesList.length} file(s)`,
       annotations
     }
   };
