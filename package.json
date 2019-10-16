@@ -37,6 +37,14 @@
     "typescript": "3.6.4"
   },
   "eslintConfig": {
+    "env": {
+      "es6": true,
+      "node": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 2020,
+      "sourceType": "script"
+    },
     "extends": "eslint:recommended"
   }
 }
