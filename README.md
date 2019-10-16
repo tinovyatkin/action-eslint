@@ -38,4 +38,4 @@ jobs:
 
 ## License
 
-All scripts and documentation in this project are released under the LGPLv3 License.
+All scripts and documentation in this project are released under the MIT License.
