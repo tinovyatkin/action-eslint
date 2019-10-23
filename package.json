@@ -25,7 +25,7 @@
     "@actions/github": "1.1.0"
   },
   "devDependencies": {
-    "@octokit/rest": "16.33.1",
+    "@octokit/rest": "16.34.0",
     "@types/eslint": "6.1.2",
     "@types/jest": "24.0.19",
     "@types/node": "12.11.1",
