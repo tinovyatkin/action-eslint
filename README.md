@@ -23,7 +23,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-      - run: rm .yarnclean
+      - run: rm -f .yarnclean
       - run: yarn --frozen-lockfile --ignore-engines --ignore-optional --no-bin-links --non-interactive --silent --ignore-scripts --production=false
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
