@@ -28,6 +28,8 @@ jobs:
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
           HUSKY_SKIP_INSTALL: true
+      # Alternative: if you use npm instead of yarn
+      # - run: npm ci --no-audit --prefer-offline
       - uses: tinovyatkin/action-eslint@v1
         with:
           repo-token: ${{secrets.GITHUB_TOKEN}}
