@@ -31,6 +31,8 @@ jobs:
       # Alternative: if you use npm instead of yarn
       # - run: npm ci --no-audit --prefer-offline
       - uses: tinovyatkin/action-eslint@v1
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         with:
           repo-token: ${{secrets.GITHUB_TOKEN}}
           check-name: eslint # this is the check name from above 👆 where to post annotations
