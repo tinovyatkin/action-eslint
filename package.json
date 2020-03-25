@@ -28,7 +28,7 @@
     "@octokit/rest": "16.38.2",
     "@types/eslint": "6.1.7",
     "@types/jest": "24.0.23",
-    "@types/node": "12.12.17",
+    "@types/node": "12.12.31",
     "@types/semver": "6.2.0",
     "eslint": "6.8.0",
     "jest": "25.1.0",
