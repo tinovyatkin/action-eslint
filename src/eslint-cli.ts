@@ -7,6 +7,22 @@ const ESLINT_TO_GITHUB_LEVELS: import('@octokit/rest').ChecksUpdateParamsOutputA
   'warning',
   'failure'
 ];
+// https://developer.github.com/v3/checks/runs/#output-object
+const ANNOTATION_LIMIT = 50
+
+const buildAnnotation = (filename, msg) => {
+  const { line, endLine, severity, ruleId, message } = msg;
+  let annotation = {
+    path: filename,
+    start_line: line || 0,
+    end_line: endLine || line || 0,
+    annotation_level: ESLINT_TO_GITHUB_LEVELS[severity],
+    title: ruleId || 'ESLint',
+    message
+  };
+
+  return annotation;
+};
 
 export async function eslint(filesList: string[]) {
   const { CLIEngine } = (await import(
@@ -23,26 +39,12 @@ export async function eslint(filesList: string[]) {
     const { filePath, messages } = result;
     const filename = filesList.find(file => filePath.endsWith(file));
     if (!filename) continue;
+
     for (const msg of messages) {
-      const {
-        line,
-        severity,
-        ruleId,
-        message,
-        endLine,
-        column,
-        endColumn
-      } = msg;
-      annotations.push({
-        path: filename,
-        start_line: line || 0,
-        end_line: endLine || line || 0,
-        start_column: column || 0,
-        end_column: endColumn || column || 0,
-        annotation_level: ESLINT_TO_GITHUB_LEVELS[severity],
-        title: ruleId || 'ESLint',
-        message
-      });
+      if (annotations.length >= ANNOTATION_LIMIT) break;
+
+      const annotation = buildAnnotation(filename, msg);
+      annotations.push(annotation);
     }
   }
 
