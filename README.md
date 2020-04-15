@@ -4,6 +4,8 @@ Using this GitHub Action, scan files changed in current Pull Request with inline
 
 <img src="./images/annotations.png">
 
+Note: `node_modules/` needs to be committed per [Github action docs](https://help.github.com/en/actions/building-actions/creating-a-javascript-action#commit-tag-and-push-your-action-to-github).
+
 ## Usage
 
 The workflow, usually declared in `.github/workflows/lint.yml`, looks like:
