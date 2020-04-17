@@ -27,7 +27,7 @@
   "devDependencies": {
     "@octokit/rest": "17.3.0",
     "@types/eslint": "6.8.0",
-    "@types/jest": "24.0.23",
+    "@types/jest": "25.2.1",
     "@types/node": "12.12.31",
     "@types/semver": "7.1.0",
     "eslint": "6.8.0",
