@@ -4,5 +4,6 @@ export const EXTENSIONS_TO_LINT = new Set([
   '.js',
   '.ts',
   '.jsx',
-  '.tsx'
+  '.tsx',
+  '.vue'
 ]);
