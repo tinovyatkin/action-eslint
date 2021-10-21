@@ -26,14 +26,27 @@ exports.EXTENSIONS_TO_LINT = new Set([
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.eslint = void 0;
 const path = __importStar(__nccwpck_require__(5622));
 const fs = __nccwpck_require__(5747);
 const constants_1 = __nccwpck_require__(5105);
@@ -123,7 +136,7 @@ const eslint_cli_1 = __nccwpck_require__(9979);
  */
 const gql = (s) => s.join('');
 async function run() {
-    const octokit = new github.GitHub(core.getInput('repo-token', { required: true }));
+    const octokit = github.getOctokit(core.getInput('repo-token', { required: true }));
     const context = github.context;
     const prInfo = await octokit.graphql(gql `
       query($owner: String!, $name: String!, $prNumber: Int!) {
@@ -149,6 +162,10 @@ async function run() {
         name: context.repo.repo,
         prNumber: context.issue.number
     });
+    if (!prInfo) {
+        console.warn('No PR info retrieved');
+        return;
+    }
     const currentSha = prInfo.repository.pullRequest.commits.nodes[0].commit.oid;
     // console.log('Commit from GraphQL:', currentSha);
     const files = prInfo.repository.pullRequest.files.nodes;
@@ -194,6 +211,7 @@ async function run() {
             ...context.repo,
             check_run_id: checkId,
             completed_at: new Date().toISOString(),
+            // @ts-ignore
             conclusion,
             output
         });

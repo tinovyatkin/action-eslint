@@ -3,7 +3,8 @@ const fs = require('fs');
 
 import { EXTENSIONS_TO_LINT } from './constants';
 
-const ESLINT_TO_GITHUB_LEVELS: import('@octokit/rest').ChecksUpdateParamsOutputAnnotations['annotation_level'][] = [
+
+const ESLINT_TO_GITHUB_LEVELS = [
   'notice',
   'warning',
   'failure'
@@ -13,15 +14,15 @@ export async function eslint(filesList: string[]) {
   const { CLIEngine } = (await import(
     path.join(process.cwd(), 'node_modules/eslint')
   )) as typeof import('eslint');
-  
-  const filteredFilesList = filesList.filter((value) => fs.existsSync(value));  
+
+  const filteredFilesList = filesList.filter((value) => fs.existsSync(value));
 
   const cli = new CLIEngine({ extensions: [...EXTENSIONS_TO_LINT] });
   const report = cli.executeOnFiles(filteredFilesList);
   // fixableErrorCount, fixableWarningCount are available too
   const { results, errorCount, warningCount } = report;
 
-  const annotations: import('@octokit/rest').ChecksUpdateParamsOutputAnnotations[] = [];
+  const annotations: any[] = [];
   for (const result of results) {
     const { filePath, messages } = result;
     const filename = filteredFilesList.find(file => filePath.endsWith(file));
@@ -36,6 +37,7 @@ export async function eslint(filesList: string[]) {
         column,
         endColumn
       } = msg;
+
       annotations.push({
         path: filename,
         start_line: line || 0,
@@ -52,7 +54,7 @@ export async function eslint(filesList: string[]) {
   return {
     conclusion: (errorCount > 0
       ? 'failure'
-      : 'success') as import('@octokit/rest').ChecksCreateParams['conclusion'],
+      : 'success') as string,
     output: {
       title: `${errorCount} error(s), ${warningCount} warning(s) found in ${filteredFilesList.length} file(s)`,
       summary: `${errorCount} error(s), ${warningCount} warning(s) found in ${filteredFilesList.length} file(s)`,

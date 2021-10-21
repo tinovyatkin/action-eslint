@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+
 import * as fg from 'fast-glob';
 import * as fs from 'fs';
 import { CHECK_NAME, EXTENSIONS_TO_LINT } from './constants';
@@ -13,9 +14,7 @@ import { eslint } from './eslint-cli';
 const gql = (s: TemplateStringsArray): string => s.join('');
 
 async function run() {
-  const octokit = new github.GitHub(
-      core.getInput('repo-token', { required: true })
-  );
+  const octokit = github.getOctokit( core.getInput('repo-token', { required: true }));
   const context = github.context;
 
   const prInfo = await octokit.graphql(
@@ -45,6 +44,10 @@ async function run() {
         prNumber: context.issue.number
       }
   );
+  if (!prInfo) {
+    console.warn('No PR info retrieved');
+    return;
+  }
   const currentSha = prInfo.repository.pullRequest.commits.nodes[0].commit.oid;
   // console.log('Commit from GraphQL:', currentSha);
   const files = prInfo.repository.pullRequest.files.nodes;
@@ -95,10 +98,12 @@ async function run() {
 
   try {
     const { conclusion, output } = await eslint(filesToLint);
+
     await octokit.checks.update({
       ...context.repo,
       check_run_id: checkId,
       completed_at: new Date().toISOString(),
+      // @ts-ignore
       conclusion,
       output
     });
