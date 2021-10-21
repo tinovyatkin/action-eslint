@@ -60,9 +60,12 @@ async function run() {
   }
 
   const filesToLint = files
-      .filter((f) => EXTENSIONS_TO_LINT.has(path.extname(f.path)) &&
-          // @ts-ignore
-          ignoredFiles.indexOf(f) === -1)
+      .filter((f) => {
+        const matchesFileExtension = EXTENSIONS_TO_LINT.has(path.extname(f.path));
+        const isIgnoredFile = ignoredFiles.some((fileIgnorePattern) => f.path.includes(fileIgnorePattern));
+
+        return matchesFileExtension && !isIgnoredFile;
+      })
       .map(f => f.path);
   if (filesToLint.length < 1) {
     console.warn(
