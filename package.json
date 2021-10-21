@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "GitHub Action to run ESLint",
-  "main": "lib/main.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "test": "jest"
