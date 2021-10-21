@@ -5,7 +5,7 @@
   "description": "GitHub Action to run ESLint",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc ; ncc build lib/main.js --license license.txt",
     "test": "jest"
   },
   "repository": {
@@ -31,6 +31,7 @@
     "@types/jest": "26.0.3",
     "@types/node": "12.12.31",
     "@types/semver": "7.3.1",
+    "@vercel/ncc": "^0.31.1",
     "eslint": "7.3.1",
     "jest": "26.2.2",
     "jest-circus": "26.2.2",
