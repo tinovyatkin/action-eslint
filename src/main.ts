@@ -58,9 +58,12 @@ async function run() {
     // @ts-ignore
     ignoredFiles = fg.sync(ignoreContents.split("\n").map(l => l.trim()).filter(l => l !== ''), {dot:true});
   }
+  console.log('files to lint: ', files);
+  console.log('ignored files: ', ignoredFiles);
 
   const filesToLint = files
       .filter((f) => {
+        console.log('file path: ', f.path);
         const matchesFileExtension = EXTENSIONS_TO_LINT.has(path.extname(f.path));
         const isIgnoredFile = ignoredFiles.some((fileIgnorePattern) => f.path.includes(fileIgnorePattern));
 
