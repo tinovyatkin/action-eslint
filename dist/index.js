@@ -173,7 +173,7 @@ async function run() {
     if (fs.existsSync('.eslintignore')) {
         let ignoreContents = fs.readFileSync('.eslintignore', 'utf-8');
         // @ts-ignore
-        ignoredFiles = fg.sync(ignoreContents.split("\n").map(l => l.trim()), { dot: true });
+        ignoredFiles = fg.sync(ignoreContents.split("\n").map(l => l.trim()).filter(l => l !== ''), { dot: true });
     }
     const filesToLint = files
         .filter((f) => constants_1.EXTENSIONS_TO_LINT.has(path.extname(f.path)) &&
