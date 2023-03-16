@@ -34,7 +34,7 @@
     "jest": "26.2.2",
     "jest-circus": "26.2.2",
     "ts-jest": "26.1.1",
-    "typescript": "3.9.6"
+    "typescript": "4.9.5"
   },
   "eslintConfig": {
     "env": {
